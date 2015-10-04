@@ -4,31 +4,31 @@ MAINTAINER Scott Vickers <scott.w.vickers@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN echo "build-essential \
+##
+# Run-time minimal packages:
+#   libcurl-openssl libicu libmozjs185 erlang
+
+# Install erlang/OTP R16B03-1 from source
+# Install couchdb 1.6.1 from source
+RUN apt-get -y update \
+&& apt-get install --quiet --assume-yes --no-install-recommends \
+build-essential \
 libtool \
 autoconf \
 automake \
 autoconf-archive \
 pkg-config \
 libssl-dev \
-zlib1g \
-zlib1g-dev \
 libcurl4-openssl-dev \
-lsb-base  \
 ncurses-dev \
 libncurses-dev \
 libmozjs185-1.0 \
 libmozjs185-dev \
 libicu-dev \
 xsltproc \
-wget" > /build-deps.txt
-
-# Install erlang/OTP R16B03-1 from source
-RUN apt-get -y update \
-&& cat /build-deps.txt | xargs apt-get install --quiet --assume-yes --no-install-recommends \
-&& mkdir -p /tmp/erlang-source \
-&& cd /tmp/erlang-source \
-&& export LANG=C \
+wget \
+&& mkdir -p /tmp_src/erlang-source \
+&& cd /tmp_src/erlang-source \
 && wget http://www.erlang.org/download/otp_src_R16B03-1.tar.gz \
 && tar xzf otp_src_R16B03-1.tar.gz \
 && cd otp_src_R16B03-1 \
@@ -39,25 +39,27 @@ RUN apt-get -y update \
 && echo "skipping wx" > lib/wx/SKIP \
 && ./configure --prefix=/usr/local \
 && make && make install \
-&& rm -rf /tmp \
-&& cat /build-deps.txt | xargs apt-get purge -y --auto-remove \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install couchdb 1.6.1 from source
-RUN apt-get -y update \
-&& cat /build-deps.txt | xargs apt-get install --quiet --assume-yes --no-install-recommends \
-&& mkdir -p /tmp/couchdb-source \
-&& cd /tmp/couchdb-source \
+&& mkdir -p /tmp_src/couchdb-source \ 
+&& cd /tmp_src/couchdb-source \
 && wget http://mirrors.advancedhosters.com/apache/couchdb/source/1.6.1/apache-couchdb-1.6.1.tar.gz \
 && tar xzf apache-couchdb-*.tar.gz \
 && cd apache-couchdb-* \
 && ./configure --prefix=/usr/local --with-js-lib=/usr/lib --with-js-include=/usr/include/mozjs --enable-init \
 && make && make install \
-&& rm -rf /tmp \
-&& cat /build-deps.txt | xargs apt-get purge -y --auto-remove \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+&& rm -rf /tmp_src \
+&& apt-get purge -y --auto-remove \
+build-essential \ 
+libtool \
+autoconf \
+automake \
+autoconf-archive \
+pkg-config \
+libssl-dev \
+ncurses-dev \
+libncurses-dev \
+xsltproc \
+wget \
+&& apt-get clean
 
 # Add couchdb user account
 RUN mkdir -p /usr/local/var/lib/couchdb \
@@ -79,11 +81,15 @@ RUN mkdir -p /usr/local/var/lib/couchdb \
 /usr/local/var/log/couchdb \
 /usr/local/var/run/couchdb
 
+# configure erlang
+ENV ERL_LIBS /usr/local/lib/erlang
+
+# persist couchdb database folder as volume
 VOLUME /usr/local/var/lib/couchdb
 
-COPY docker-entrypoint.sh /
-
+COPY ./docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 5984
+USER couchdb
 CMD ["couchdb"]
