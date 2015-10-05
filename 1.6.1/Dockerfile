@@ -39,7 +39,7 @@ wget \
 && echo "skipping wx" > lib/wx/SKIP \
 && ./configure --prefix=/usr/local \
 && make && make install \
-&& mkdir -p /tmp_src/couchdb-source \ 
+&& mkdir -p /tmp_src/couchdb-source \
 && cd /tmp_src/couchdb-source \
 && wget http://mirrors.advancedhosters.com/apache/couchdb/source/1.6.1/apache-couchdb-1.6.1.tar.gz \
 && tar xzf apache-couchdb-*.tar.gz \
@@ -48,7 +48,7 @@ wget \
 && make && make install \
 && rm -rf /tmp_src \
 && apt-get purge -y --auto-remove \
-build-essential \ 
+build-essential \
 libtool \
 autoconf \
 automake \
@@ -87,9 +87,11 @@ ENV ERL_LIBS /usr/local/lib/erlang
 # persist couchdb database folder as volume
 VOLUME /usr/local/var/lib/couchdb
 
+RUN wget -O /gosu -nv "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)"
+&& chmod +x /gosu
+
 COPY ./docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 5984
-USER couchdb
 CMD ["couchdb"]
