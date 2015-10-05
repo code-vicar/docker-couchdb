@@ -7,7 +7,7 @@ if [ "$1" = 'couchdb' ]; then
   echo "bind_address = 0.0.0.0" >> /usr/local/etc/couchdb/local.ini
 
   echo "Starting couchdb"
-  exec gosu couchdb "$@"
+  exec /gosu couchdb "$@"
 fi
 
 echo "Passthrough command"

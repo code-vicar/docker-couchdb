@@ -14,6 +14,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update \
 && apt-get install --quiet --assume-yes --no-install-recommends \
 build-essential \
+ca-certificates \
 libtool \
 autoconf \
 automake \
@@ -48,10 +49,11 @@ wget \
 && ./configure --prefix=/usr/local --with-js-lib=/usr/lib --with-js-include=/usr/include/mozjs --enable-init \
 && make && make install \
 && rm -rf /tmp_src \
-&& wget -O /gosu -nv "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)" \
+&& wget -O /gosu -nv --ca-directory=/etc/ssl/certs "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)" \
 && chmod +x /gosu \
 && apt-get purge -y --auto-remove \
 build-essential \
+ca-certificates \
 libtool \
 autoconf \
 automake \
