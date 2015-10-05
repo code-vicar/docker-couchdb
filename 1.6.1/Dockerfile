@@ -10,6 +10,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install erlang/OTP R16B03-1 from source
 # Install couchdb 1.6.1 from source
+# Install gosu 1.5
 RUN apt-get -y update \
 && apt-get install --quiet --assume-yes --no-install-recommends \
 build-essential \
@@ -47,6 +48,8 @@ wget \
 && ./configure --prefix=/usr/local --with-js-lib=/usr/lib --with-js-include=/usr/include/mozjs --enable-init \
 && make && make install \
 && rm -rf /tmp_src \
+&& wget -O /gosu -nv "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)" \
+&& chmod +x /gosu \
 && apt-get purge -y --auto-remove \
 build-essential \
 libtool \
@@ -86,9 +89,6 @@ ENV ERL_LIBS /usr/local/lib/erlang
 
 # persist couchdb database folder as volume
 VOLUME /usr/local/var/lib/couchdb
-
-RUN wget -O /gosu -nv "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)"
-&& chmod +x /gosu
 
 COPY ./docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
