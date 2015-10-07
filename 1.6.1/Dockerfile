@@ -3,7 +3,9 @@ FROM debian:jessie
 MAINTAINER Scott Vickers <scott.w.vickers@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
-
+ENV ERLANG_DOWNLOAD_SHA256 17ce53459bc5ceb34fc2da412e15ac8c23835a15fbd84e62c8d1852704747ee7
+ENV COUCHDB_DOWNLOAD_SHA256 5a601b173733ce3ed31b654805c793aa907131cd70b06d03825f169aa48c8627
+ENV GOSU_DOWNLOAD_SHA256 6f9a6f5d75e25ba3b5ec690a5c601140c43929c3fe565cea2687cc284a8aacc8
 ##
 # Run-time minimal packages:
 #   libcurl-openssl libicu libmozjs185 erlang
@@ -32,6 +34,7 @@ wget \
 && mkdir -p /tmp_src/erlang-source \
 && cd /tmp_src/erlang-source \
 && wget http://www.erlang.org/download/otp_src_R16B03-1.tar.gz \
+&& echo "$ERLANG_DOWNLOAD_SHA256 *otp_src_R16B03-1.tar.gz" | sha256sum -c - \
 && tar xzf otp_src_R16B03-1.tar.gz \
 && cd otp_src_R16B03-1 \
 && export ERL_TOP=`pwd` \
@@ -44,13 +47,16 @@ wget \
 && mkdir -p /tmp_src/couchdb-source \
 && cd /tmp_src/couchdb-source \
 && wget http://mirrors.advancedhosters.com/apache/couchdb/source/1.6.1/apache-couchdb-1.6.1.tar.gz \
+&& echo "$COUCHDB_DOWNLOAD_SHA256 *apache-couchdb-1.6.1.tar.gz" | sha256sum -c - \
 && tar xzf apache-couchdb-*.tar.gz \
 && cd apache-couchdb-* \
 && ./configure --prefix=/usr/local --with-js-lib=/usr/lib --with-js-include=/usr/include/mozjs --enable-init \
 && make && make install \
 && rm -rf /tmp_src \
-&& wget -O /gosu -nv --ca-directory=/etc/ssl/certs "https://github.com/tianon/gosu/releases/download/1.5/gosu-$(dpkg --print-architecture)" \
-&& chmod +x /gosu \
+&& cd / \
+&& wget -O gosu -nv --ca-directory=/etc/ssl/certs "https://github.com/tianon/gosu/releases/download/1.5/gosu-amd64" \
+&& echo "$GOSU_DOWNLOAD_SHA256 *gosu" | sha256sum -c - \
+&& chmod +x gosu \
 && apt-get purge -y --auto-remove \
 build-essential \
 ca-certificates \
